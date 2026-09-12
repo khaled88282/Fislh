@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>New Taza POS — Supply &amp; Collection System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy-deep:#0F1E24;
+    --navy:#14262E;
+    --teal:#2C8C99;
+    --teal-dark:#1F6871;
+    --teal-light:#DCEEF0;
+    --amber:#E8A33D;
+    --amber-light:#FBEBD2;
+    --green:#3F9142;
+    --green-light:#DEF0DE;
+    --red:#C24A3F;
+    --red-light:#F7DEDB;
+    --bg:#F3F6F6;
+    --white:#FFFFFF;
+    --border:#DCE3E4;
+    --ink-soft:#5B6E73;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:'Manrope',sans-serif;
+    background:var(--bg);
+    color:var(--navy);
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  button{font-family:inherit;cursor:pointer;}
+  input,select{font-family:inherit;}
+
+  /* ---------- LOGIN ---------- */
+  #login-screen{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:
+      radial-gradient(circle at 15% 20%, rgba(44,140,153,0.18), transparent 45%),
+      radial-gradient(circle at 85% 80%, rgba(232,163,61,0.14), transparent 45%),
+      var(--navy-deep);
+    padding:20px;
+  }
+  .login-card{
+    background:var(--white);
+    border-radius:14px;
+    width:100%;
+    max-width:380px;
+    padding:34px 30px 28px;
+    box-shadow:0 30px 60px rgba(0,0,0,0.35);
+  }
+  .login-brand{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:6px;
+  }
+  .login-brand-mark{
+    width:36px;height:36px;border-radius:9px;
+    background:linear-gradient(155deg,var(--teal),var(--teal-dark));
+    display:flex;align-items:center;justify-content:center;
+    color:#fff;font-weight:800;font-size:16px;
+    flex:none;
+  }
+  .login-brand-name{font-weight:800;font-size:17px;letter-spacing:-0.01em;}
+  .login-sub{color:var(--ink-soft);font-size:13.5px;margin:2px 0 26px;line-height:1.5;}
+  .field{margin-bottom:16px;}
+  .field label{display:block;font-size:12.5px;font-weight:600;color:var(--ink-soft);margin-bottom:6px;}
+  .field input,.field select{
+    width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:9px;
+    font-size:14.5px;background:#FBFCFC;outline:none;transition:border-color .15s;
+  }
+  .field input:focus,.field select:focus{border-color:var(--teal);background:#fff;}
+  .role-toggle{display:flex;gap:8px;margin-bottom:18px;}
+  .role-btn{
+    flex:1;padding:10px 8px;border-radius:9px;border:1.5px solid var(--border);
+    background:#FBFCFC;font-weight:700;font-size:13px;color:var(--ink-soft);
+    text-align:center;transition:all .15s;
+  }
+  .role-btn.active{border-color:var(--teal);background:var(--teal-light);color:var(--teal-dark);}
+  .btn-primary{
+    width:100%;padding:12px;border:none;border-radius:9px;
+    background:var(--navy);color:#fff;font-weight:700;font-size:14.5px;
+    margin-top:4px;transition:background .15s;
+  }
+  .btn-primary:hover{background:var(--teal-dark);}
+  .login-error{
+    background:var(--red-light);color:var(--red);font-size:13px;font-weight:600;
+    padding:9px 12px;border-radius:8px;margin-bottom:14px;display:none;
+  }
+  .login-hint{margin-top:20px;font-size:11.5px;color:#9AA9AC;text-align:center;line-height:1.6;}
+
+  /* ---------- APP SHELL ---------- */
+  #app-screen{display:none;min-height:100vh;}
+  .shell{display:flex;min-height:100vh;}
+  .sidebar{
+    width:210px;flex:none;background:var(--navy-deep);color:#fff;
+    padding:20px 14px;display:flex;flex-direction:column;
+    position:sticky;top:0;height:100vh;
+  }
+  .sb-brand{display:flex;align-items:center;gap:9px;padding:0 6px 20px;border-bottom:1px solid rgba(255,255,255,0.09);margin-bottom:16px;}
+  .sb-brand-mark{width:30px;height:30px;border-radius:8px;background:linear-gradient(155deg,var(--teal),var(--teal-dark));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex:none;}
+  .sb-brand-text div:first-child{font-weight:800;font-size:14.5px;}
+  .sb-brand-text div:last-child{font-size:10.5px;color:#8FA6AB;}
+  .sb-nav{display:flex;flex-direction:column;gap:3px;flex:1;}
+  .sb-item{
+    padding:10px 12px;border-radius:8px;color:#B9C9CC;font-size:13.5px;font-weight:600;
+    display:flex;align-items:center;gap:9px;transition:all .15s;border:none;background:none;text-align:left;width:100%;
+  }
+  .sb-item:hover{background:rgba(255,255,255,0.06);color:#fff;}
+  .sb-item.active{background:var(--teal);color:#fff;}
+  .sb-dot{width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.7;flex:none;}
+  .sb-foot{border-top:1px solid rgba(255,255,255,0.09);padding-top:14px;margin-top:10px;}
+  .sb-user{font-size:12.5px;color:#B9C9CC;margin-bottom:10px;padding:0 12px;}
+  .sb-user b{color:#fff;display:block;font-size:13.5px;}
+  .sb-logout{width:100%;padding:9px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);background:none;color:#EAB99A;font-size:12.5px;font-weight:700;}
+  .sb-logout:hover{background:rgba(255,255,255,0.06);}
+
+  .main{flex:1;padding:26px 30px 60px;max-width:1100px;}
+  .topbar{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px;flex-wrap:wrap;gap:10px;}
+  .topbar h1{font-size:21px;margin:0 0 4px;letter-spacing:-0.01em;}
+  .topbar p{margin:0;color:var(--ink-soft);font-size:13.5px;}
+
+  .kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:26px;}
+  .kpi{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:16px 18px;}
+  .kpi .lbl{font-size:12px;color:var(--ink-soft);font-weight:600;margin-bottom:8px;}
+  .kpi .val{font-size:22px;font-weight:800;font-family:'IBM Plex Mono',monospace;}
+  .kpi.due .val{color:var(--red);}
+  .kpi.paid .val{color:var(--green);}
+  .kpi.teal .val{color:var(--teal-dark);}
+
+  .panel{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:20px 22px;margin-bottom:20px;}
+  .panel-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;}
+  .panel-head h2{font-size:15.5px;margin:0;}
+  .btn{padding:9px 15px;border-radius:8px;border:1.5px solid var(--border);background:#fff;font-weight:700;font-size:13px;color:var(--navy);}
+  .btn:hover{border-color:var(--teal);}
+  .btn-dark{background:var(--navy);color:#fff;border-color:var(--navy);}
+  .btn-dark:hover{background:var(--teal-dark);border-color:var(--teal-dark);}
+  .btn-danger{color:var(--red);border-color:var(--red-light);}
+  .btn-danger:hover{background:var(--red-light);border-color:var(--red);}
+  .btn-sm{padding:6px 11px;font-size:12px;}
+
+  table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  th{text-align:left;color:var(--ink-soft);font-weight:700;font-size:11.5px;text-transform:uppercase;letter-spacing:.03em;padding:8px 10px;border-bottom:1.5px solid var(--border);}
+  td{padding:11px 10px;border-bottom:1px solid var(--border);vertical-align:middle;}
+  tr:last-child td{border-bottom:none;}
+  .amt{font-family:'IBM Plex Mono',monospace;font-weight:600;}
+  .badge{display:inline-block;padding:3px 9px;border-radius:6px;font-size:11px;font-weight:700;}
+  .badge.paid{background:var(--green-light);color:var(--green);}
+  .badge.due{background:var(--red-light);color:var(--red);}
+  .badge.partial{background:var(--amber-light);color:#96631B;}
+
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .form-grid .full{grid-column:1/-1;}
+  @media(max-width:640px){.form-grid{grid-template-columns:1fr;}}
+
+  .item-row{display:grid;grid-template-columns:2fr 0.7fr 0.8fr 0.8fr auto;gap:8px;margin-bottom:8px;align-items:center;}
+  .item-row input{padding:9px 10px;border:1.5px solid var(--border);border-radius:7px;font-size:13.5px;}
+  .rm-item{background:none;border:none;color:var(--red);font-size:18px;font-weight:700;line-height:1;padding:4px;}
+
+  .totals-box{margin-top:14px;padding:14px 16px;background:var(--teal-light);border-radius:10px;max-width:280px;margin-left:auto;}
+  .totals-box .row{display:flex;justify-content:space-between;font-size:13.5px;padding:3px 0;}
+  .totals-box .row.grand{font-weight:800;font-size:15.5px;border-top:1.5px solid rgba(31,104,113,0.25);margin-top:6px;padding-top:8px;color:var(--teal-dark);}
+
+  .empty{text-align:center;padding:36px 20px;color:var(--ink-soft);font-size:13.5px;}
+  .empty b{display:block;color:var(--navy);font-size:14.5px;margin-bottom:4px;}
+
+  .modal-bg{display:none;position:fixed;inset:0;background:rgba(15,30,36,0.5);z-index:50;align-items:center;justify-content:center;padding:20px;}
+  .modal-bg.show{display:flex;}
+  .modal{background:#fff;border-radius:14px;padding:24px 26px;max-width:420px;width:100%;max-height:88vh;overflow-y:auto;}
+  .modal h3{margin:0 0 16px;font-size:16.5px;}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;padding:11px 20px;border-radius:9px;font-size:13.5px;font-weight:600;z-index:100;opacity:0;transition:opacity .25s;pointer-events:none;}
+  .toast.show{opacity:1;}
+
+  .mobile-topbar{display:none;}
+  @media(max-width:820px){
+    .shell{flex-direction:column;}
+    .sidebar{width:100%;height:auto;position:relative;flex-direction:row;align-items:center;padding:12px 14px;}
+    .sb-brand{border:none;margin:0;padding:0;margin-right:auto;}
+    .sb-nav{flex-direction:row;flex:none;overflow-x:auto;}
+    .sb-foot{display:none;}
+    .main{padding:18px 16px 50px;}
+    .mobile-topbar{display:flex;justify-content:flex-end;margin-bottom:10px;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ================= LOGIN ================= -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-brand">
+      <div class="login-brand-mark">NT</div>
+      <div class="login-brand-name">New Taza POS</div>
+    </div>
+    <div class="login-sub">Supply invoicing &amp; cash collection system</div>
+
+    <div class="role-toggle">
+      <button class="role-btn active" id="roleBtnManager" onclick="setLoginRole('manager')">Manager</button>
+      <button class="role-btn" id="roleBtnStaff" onclick="setLoginRole('staff')">Cash Collection Staff</button>
+    </div>
+
+    <div class="login-error" id="loginError">Username or password is incorrect.</div>
+
+    <div class="field">
+      <label>Username</label>
+      <input type="text" id="loginUser" autocomplete="username" placeholder="Enter username">
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <input type="password" id="loginPass" autocomplete="current-password" placeholder="Enter password">
+    </div>
+    <button class="btn-primary" onclick="attemptLogin()">Log in</button>
+
+    <div class="login-hint">Default demo logins — Manager: <b>manager / manager123</b><br>Staff: <b>staff1 / staff123</b><br>(change these after first login)</div>
+  </div>
+</div>
+
+<!-- ================= APP ================= -->
+<div id="app-screen">
+  <div class="shell">
+    <div class="sidebar">
+      <div class="sb-brand">
+        <div class="sb-brand-mark">NT</div>
+        <div class="sb-brand-text"><div>New Taza POS</div><div id="sbRoleLabel">Manager</div></div>
+      </div>
+      <div class="sb-nav" id="sbNav"></div>
+      <div class="sb-foot">
+        <div class="sb-user"><b id="sbUserName">—</b><span id="sbUserRole">—</span></div>
+        <button class="sb-logout" onclick="logout()">Log out</button>
+      </div>
+    </div>
+    <div class="main">
+      <div class="mobile-topbar"><button class="btn btn-sm" onclick="logout()">Log out</button></div>
+      <div id="view"></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modalBg"><div class="modal" id="modalBody"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ======================= STORAGE ======================= */
+const DB_KEYS = { users:'nt_users', shops:'nt_shops', invoices:'nt_invoices' };
+
+function loadDB(){
+  if(!localStorage.getItem(DB_KEYS.users)){
+    localStorage.setItem(DB_KEYS.users, JSON.stringify([
+      {username:'manager', password:'manager123', role:'manager', name:'Manager'},
+      {username:'staff1', password:'staff123', role:'staff', name:'Staff 1'}
+    ]));
+  }
+  if(!localStorage.getItem(DB_KEYS.shops)){
+    localStorage.setItem(DB_KEYS.shops, JSON.stringify([]));
+  }
+  if(!localStorage.getItem(DB_KEYS.invoices)){
+    localStorage.setItem(DB_KEYS.invoices, JSON.stringify([]));
+  }
+}
+function getUsers(){ return JSON.parse(localStorage.getItem(DB_KEYS.users)); }
+function setUsers(v){ localStorage.setItem(DB_KEYS.users, JSON.stringify(v)); }
+function getShops(){ return JSON.parse(localStorage.getItem(DB_KEYS.shops)); }
+function setShops(v){ localStorage.setItem(DB_KEYS.shops, JSON.stringify(v)); }
+function getInvoices(){ return JSON.parse(localStorage.getItem(DB_KEYS.invoices)); }
+function setInvoices(v){ localStorage.setItem(DB_KEYS.invoices, JSON.stringify(v)); }
+
+/* ======================= STATE ======================= */
+let session = null; // {username, role, name}
+let loginRoleSelected = 'manager';
+let currentView = 'dashboard';
+let draftItems = [];
+
+/* ======================= HELPERS ======================= */
+function fmt(n){ return (Math.round(n*100)/100).toFixed(2); }
+function todayISO(){ return new Date().toISOString().slice(0,10); }
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2200);
+}
+function openModal(html){
+  document.getElementById('modalBody').innerHTML = html;
+  document.getElementById('modalBg').classList.add('show');
+}
+function closeModal(){ document.getElementById('modalBg').classList.remove('show'); }
+function invoiceDue(inv){
+  const paid = (inv.paymentsLog||[]).reduce((s,p)=>s+p.amount,0);
+  return Math.max(0, inv.total - paid);
+}
+function invoiceStatus(inv){
+  const due = invoiceDue(inv);
+  if(due <= 0.009) return 'paid';
+  if((inv.paymentsLog||[]).length>0) return 'partial';
+  return 'due';
+}
+function shopName(id){ const s = getShops().find(s=>s.id===id); return s? s.name : '—'; }
+
+/* ======================= LOGIN ======================= */
+function setLoginRole(r){
+  loginRoleSelected = r;
+  document.getElementById('roleBtnManager').classList.toggle('active', r==='manager');
+  document.getElementById('roleBtnStaff').classList.toggle('active', r==='staff');
+}
+function attemptLogin(){
+  const u = document.getElementById('loginUser').value.trim();
+  const p = document.getElementById('loginPass').value;
+  const user = getUsers().find(x=>x.username===u && x.password===p && x.role===loginRoleSelected);
+  const err = document.getElementById('loginError');
+  if(!user){ err.style.display='block'; return; }
+  err.style.display='none';
+  session = {username:user.username, role:user.role, name:user.name};
+  sessionStorage.setItem('nt_session', JSON.stringify(session));
+  enterApp();
+}
+function logout(){
+  session = null;
+  sessionStorage.removeItem('nt_session');
+  document.getElementById('app-screen').style.display='none';
+  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('loginUser').value=''; document.getElementById('loginPass').value='';
+}
+function enterApp(){
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app-screen').style.display='block';
+  document.getElementById('sbUserName').textContent = session.name;
+  document.getElementById('sbUserRole').textContent = session.role==='manager' ? 'Manager access' : 'Cash collection staff';
+  document.getElementById('sbRoleLabel').textContent = session.role==='manager' ? 'Manager' : 'Collection';
+  buildNav();
+  navigate(session.role==='manager' ? 'dashboard' : 'mycollections');
+}
+function buildNav(){
+  const nav = document.getElementById('sbNav');
+  if(session.role==='manager'){
+    nav.innerHTML = `
+      <button class="sb-item" data-v="dashboard" onclick="navigate('dashboard')"><span class="sb-dot"></span>Dashboard</button>
+      <button class="sb-item" data-v="invoices" onclick="navigate('invoices')"><span class="sb-dot"></span>Invoices</button>
+      <button class="sb-item" data-v="newinvoice" onclick="navigate('newinvoice')"><span class="sb-dot"></span>New Invoice</button>
+      <button class="sb-item" data-v="shops" onclick="navigate('shops')"><span class="sb-dot"></span>Shops</button>
+      <button class="sb-item" data-v="staff" onclick="navigate('staff')"><span class="sb-dot"></span>Staff Accounts</button>
+      <button class="sb-item" data-v="reports" onclick="navigate('reports')"><span class="sb-dot"></span>Reports</button>
+    `;
+  } else {
+    nav.innerHTML = `
+      <button class="sb-item" data-v="mycollections" onclick="navigate('mycollections')"><span class="sb-dot"></span>To Collect</button>
+      <button class="sb-item" data-v="myhistory" onclick="navigate('myhistory')"><span class="sb-dot"></span>My Collection History</button>
+    `;
+  }
+}
+function navigate(v){
+  currentView = v;
+  document.querySelectorAll('.sb-item').forEach(b=>b.classList.toggle('active', b.dataset.v===v));
+  render();
+}
+
+/* ======================= RENDER ROUTER ======================= */
+function render(){
+  const el = document.getElementById('view');
+  if(session.role==='manager'){
+    if(currentView==='dashboard') el.innerHTML = viewManagerDashboard();
+    else if(currentView==='invoices') el.innerHTML = viewInvoiceList();
+    else if(currentView==='newinvoice'){ el.innerHTML = viewNewInvoice(); refreshTotals(); }
+    else if(currentView==='shops') el.innerHTML = viewShops();
+    else if(currentView==='staff') el.innerHTML = viewStaff();
+    else if(currentView==='reports') el.innerHTML = viewReports();
+  } else {
+    if(currentView==='mycollections') el.innerHTML = viewMyCollections();
+    else if(currentView==='myhistory') el.innerHTML = viewMyHistory();
+  }
+}
+
+/* ======================= MANAGER: DASHBOARD ======================= */
+function viewManagerDashboard(){
+  const invs = getInvoices();
+  const totalSales = invs.reduce((s,i)=>s+i.total,0);
+  const totalDue = invs.reduce((s,i)=>s+invoiceDue(i),0);
+  const totalCollected = totalSales - totalDue;
+  const today = todayISO();
+  const collectedToday = invs.flatMap(i=>i.paymentsLog||[]).filter(p=>p.date===today).reduce((s,p)=>s+p.amount,0);
+  const recent = [...invs].sort((a,b)=> b.createdAt - a.createdAt).slice(0,6);
+
+  return `
+    <div class="topbar"><div><h1>Manager Dashboard</h1><p>Overview of all shops, invoices and collections</p></div>
+      <button class="btn btn-dark" onclick="navigate('newinvoice')">+ New Invoice</button></div>
+
+    <div class="kpi-row">
+      <div class="kpi teal"><div class="lbl">Total Invoiced</div><div class="val mono">${fmt(totalSales)}</div></div>
+      <div class="kpi paid"><div class="lbl">Total Collected</div><div class="val mono">${fmt(totalCollected)}</div></div>
+      <div class="kpi due"><div class="lbl">Outstanding Due</div><div class="val mono">${fmt(totalDue)}</div></div>
+      <div class="kpi"><div class="lbl">Collected Today</div><div class="val mono">${fmt(collectedToday)}</div></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><h2>Recent Invoices</h2><button class="btn btn-sm" onclick="navigate('invoices')">View all</button></div>
+      ${recent.length===0 ? emptyState('No invoices yet','Create your first invoice to get started.') : `
+      <table><thead><tr><th>Invoice</th><th>Shop</th><th>Date</th><th>Total</th><th>Status</th></tr></thead>
+      <tbody>${recent.map(i=>`<tr><td>#${i.invoiceNo}</td><td>${shopName(i.shopId)}</td><td>${i.date}</td><td class="amt">${fmt(i.total)}</td><td>${statusBadge(i)}</td></tr>`).join('')}</tbody></table>`}
+    </div>
+  `;
+}
+function statusBadge(inv){
+  const s = invoiceStatus(inv);
+  const label = s==='paid'?'Paid':s==='partial'?'Partial':'Due';
+  return `<span class="badge ${s}">${label}</span>`;
+}
+function emptyState(title,sub){
+  return `<div class="empty"><b>${title}</b>${sub}</div>`;
+}
+
+/* ======================= MANAGER: SHOPS ======================= */
+function viewShops(){
+  const shops = getShops();
+  return `
+    <div class="topbar"><div><h1>Shops</h1><p>Customer shops you supply to</p></div>
+      <button class="btn btn-dark" onclick="openShopForm()">+ Add Shop</button></div>
+    <div class="panel">
+      ${shops.length===0 ? emptyState('No shops added yet','Add the shops you deliver fish, chicken, spices etc. to.') : `
+      <table><thead><tr><th>Shop Name</th><th>Address</th><th>Phone</th><th></th></tr></thead>
+      <tbody>${shops.map(s=>`<tr><td><b>${s.name}</b></td><td>${s.address||'—'}</td><td>${s.phone||'—'}</td>
+      <td style="text-align:right"><button class="btn btn-sm" onclick="openShopForm('${s.id}')">Edit</button>
+      <button class="btn btn-sm btn-danger" onclick="deleteShop('${s.id}')">Delete</button></td></tr>`).join('')}</tbody></table>`}
+    </div>
+  `;
+}
+function openShopForm(id){
+  const s = id ? getShops().find(x=>x.id===id) : null;
+  openModal(`
+    <h3>${s?'Edit Shop':'Add Shop'}</h3>
+    <div class="field"><label>Shop Name</label><input id="shopName" value="${s?s.name:''}"></div>
+    <div class="field"><label>Address</label><input id="shopAddr" value="${s?s.address||'':''}"></div>
+    <div class="field"><label>Phone</label><input id="shopPhone" value="${s?s.phone||'':''}"></div>
+    <div style="display:flex;gap:8px;margin-top:6px;">
+      <button class="btn btn-dark" style="flex:1" onclick="saveShop('${id||''}')">Save</button>
+      <button class="btn" style="flex:1" onclick="closeModal()">Cancel</button>
+    </div>
+  `);
+}
+function saveShop(id){
+  const name = document.getElementById('shopName').value.trim();
+  if(!name){ showToast('Shop name is required'); return; }
+  const addr = document.getElementById('shopAddr').value.trim();
+  const phone = document.getElementById('shopPhone').value.trim();
+  let shops = getShops();
+  if(id){
+    shops = shops.map(s=> s.id===id ? {...s, name, address:addr, phone} : s);
+  } else {
+    shops.push({id:'sh_'+Date.now(), name, address:addr, phone});
+  }
+  setShops(shops);
+  closeModal(); showToast('Shop saved'); render();
+}
+function deleteShop(id){
+  if(!confirm('Delete this shop? Existing invoices will keep the reference.')) return;
+  setShops(getShops().filter(s=>s.id!==id));
+  showToast('Shop deleted'); render();
+}
+
+/* ======================= MANAGER: STAFF ACCOUNTS ======================= */
+function viewStaff(){
+  const users = getUsers();
+  return `
+    <div class="topbar"><div><h1>Staff Accounts</h1><p>Manager and cash collection staff logins</p></div>
+      <button class="btn btn-dark" onclick="openUserForm()">+ Add Staff</button></div>
+    <div class="panel">
+      <table><thead><tr><th>Name</th><th>Username</th><th>Role</th><th></th></tr></thead>
+      <tbody>${users.map(u=>`<tr><td>${u.name}</td><td class="mono">${u.username}</td>
+      <td>${u.role==='manager'?'Manager':'Cash Collection Staff'}</td>
+      <td style="text-align:right"><button class="btn btn-sm" onclick="openUserForm('${u.username}')">Edit</button>
+      ${u.username!==session.username?`<button class="btn btn-sm btn-danger" onclick="deleteUser('${u.username}')">Remove</button>`:''}</td></tr>`).join('')}</tbody></table>
+    </div>
+  `;
+}
+function openUserForm(username){
+  const u = username ? getUsers().find(x=>x.username===username) : null;
+  openModal(`
+    <h3>${u?'Edit Staff Account':'Add Staff Account'}</h3>
+    <div class="field"><label>Full Name</label><input id="uName" value="${u?u.name:''}"></div>
+    <div class="field"><label>Username</label><input id="uUser" value="${u?u.username:''}" ${u?'disabled':''}></div>
+    <div class="field"><label>Password</label><input id="uPass" type="text" value="${u?u.password:''}" placeholder="Set password"></div>
+    <div class="field"><label>Role</label>
+      <select id="uRole">
+        <option value="staff" ${u&&u.role==='staff'?'selected':''}>Cash Collection Staff</option>
+        <option value="manager" ${u&&u.role==='manager'?'selected':''}>Manager</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:6px;">
+      <button class="btn btn-dark" style="flex:1" onclick="saveUser('${username||''}')">Save</button>
+      <button class="btn" style="flex:1" onclick="closeModal()">Cancel</button>
+    </div>
+  `);
+}
+function saveUser(existingUsername){
+  const name = document.getElementById('uName').value.trim();
+  const uname = document.getElementById('uUser').value.trim();
+  const pass = document.getElementById('uPass').value;
+  const role = document.getElementById('uRole').value;
+  if(!name || !uname || !pass){ showToast('All fields are required'); return; }
+  let users = getUsers();
+  if(existingUsername){
+    users = users.map(u=> u.username===existingUsername ? {...u, name, password:pass, role} : u);
+  } else {
+    if(users.some(u=>u.username===uname)){ showToast('Username already exists'); return; }
+    users.push({username:uname, password:pass, role, name});
+  }
+  setUsers(users);
+  closeModal(); showToast('Account saved'); render();
+}
+function deleteUser(username){
+  if(!confirm('Remove this staff account?')) return;
+  setUsers(getUsers().filter(u=>u.username!==username));
+  showToast('Account removed'); render();
+}
+
+/* ======================= MANAGER: NEW INVOICE ======================= */
+function viewNewInvoice(){
+  draftItems = draftItems.length ? draftItems : [{desc:'',qty:'',rate:''}];
+  const shops = getShops();
+  const staffUsers = getUsers().filter(u=>u.role==='staff');
+  return `
+    <div class="topbar"><div><h1>New Invoice</h1><p>Create a supply invoice for a shop</p></div></div>
+    <div class="panel">
+      <div class="form-grid">
+        <div class="field"><label>Shop</label>
+          <select id="invShop">
+            <option value="">Select shop…</option>
+            ${shops.map(s=>`<option value="${s.id}">${s.name}</option>`).join('')}
+          </select>
+        </div>
+        <div class="field"><label>Date</label><input type="date" id="invDate" value="${todayISO()}"></div>
+        <div class="field"><label>Invoice No.</label><input id="invNo" value="${nextInvoiceNo()}"></div>
+        <div class="field"><label>Assign to Collection Staff (optional)</label>
+          <select id="invAssign">
+            <option value="">Any staff can collect</option>
+            ${staffUsers.map(u=>`<option value="${u.username}">${u.name}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+
+      <div style="margin-top:6px;font-size:12.5px;font-weight:700;color:var(--ink-soft);margin-bottom:8px;">ITEMS</div>
+      <div id="itemsWrap">${draftItems.map((it,idx)=>itemRowHTML(it,idx)).join('')}</div>
+      <button class="btn btn-sm" onclick="addItemRow()">+ Add Item</button>
+
+      <div class="totals-box" id="totalsBox"></div>
+
+      <div style="display:flex;gap:8px;margin-top:18px;">
+        <button class="btn btn-dark" onclick="saveInvoice()">Save Invoice</button>
+        <button class="btn" onclick="draftItems=[{desc:'',qty:'',rate:''}]; navigate('newinvoice')">Reset</button>
+      </div>
+    </div>
+  `;
+}
+function nextInvoiceNo(){
+  const invs = getInvoices();
+  const max = invs.reduce((m,i)=> Math.max(m, parseInt(i.invoiceNo)||0), 7527);
+  return String(max+1);
+}
+function itemRowHTML(it, idx){
+  return `<div class="item-row" data-idx="${idx}">
+    <input placeholder="Description (e.g. Shrimp 80/100)" value="${it.desc}" oninput="updateItem(${idx},'desc',this.value)">
+    <input placeholder="Qty" value="${it.qty}" oninput="updateItem(${idx},'qty',this.value)">
+    <input placeholder="Rate" value="${it.rate}" oninput="updateItem(${idx},'rate',this.value)">
+    <input value="${amtFor(it)}" disabled class="mono">
+    <button class="rm-item" onclick="removeItem(${idx})">×</button>
+  </div>`;
+}
+function amtFor(it){
+  const q = parseFloat(it.qty)||0, r = parseFloat(it.rate)||0;
+  return q&&r ? fmt(q*r) : '';
+}
+function addItemRow(){ draftItems.push({desc:'',qty:'',rate:''}); navigate('newinvoice'); }
+function removeItem(idx){ draftItems.splice(idx,1); if(draftItems.length===0) draftItems=[{desc:'',qty:'',rate:''}]; navigate('newinvoice'); }
+function updateItem(idx, field, val){
+  draftItems[idx][field] = val;
+  document.querySelectorAll('#itemsWrap .item-row')[idx].children[3].value = amtFor(draftItems[idx]);
+  refreshTotals();
+}
+function refreshTotals(){
+  const sub = draftItems.reduce((s,it)=> s + (parseFloat(it.qty)||0)*(parseFloat(it.rate)||0), 0);
+  const vat = sub*0.05;
+  document.getElementById('totalsBox').innerHTML = `
+    <div class="row"><span>Sub Total</span><span class="mono">${fmt(sub)}</span></div>
+    <div class="row"><span>VAT (5%)</span><span class="mono">${fmt(vat)}</span></div>
+    <div class="row grand"><span>Total</span><span class="mono">${fmt(sub+vat)}</span></div>
+  `;
+}
+
+function saveInvoice(){
+  const shopId = document.getElementById('invShop').value;
+  const date = document.getElementById('invDate').value;
+  const invoiceNo = document.getElementById('invNo').value.trim();
+  const assignedTo = document.getElementById('invAssign').value;
+  if(!shopId){ showToast('Please select a shop'); return; }
+  const items = draftItems.filter(it=>it.desc && it.qty && it.rate).map(it=>({
+    desc:it.desc, qty:parseFloat(it.qty), rate:parseFloat(it.rate), amount:parseFloat(it.qty)*parseFloat(it.rate)
+  }));
+  if(items.length===0){ showToast('Add at least one item'); return; }
+  const sub = items.reduce((s,i)=>s+i.amount,0);
+  const vat = sub*0.05;
+  const total = sub+vat;
+  const invoices = getInvoices();
+  invoices.push({
+    id:'inv_'+Date.now(), invoiceNo, shopId, date, items, subtotal:sub, vat, total,
+    assignedTo, paymentsLog:[], createdAt: Date.now(), createdBy: session.username
+  });
+  setInvoices(invoices);
+  draftItems = [{desc:'',qty:'',rate:''}];
+  showToast('Invoice #'+invoiceNo+' saved');
+  navigate('invoices');
+}
+
+/* ======================= MANAGER: INVOICE LIST ======================= */
+function viewInvoiceList(){
+  const invs = [...getInvoices()].sort((a,b)=>b.createdAt-a.createdAt);
+  return `
+    <div class="topbar"><div><h1>All Invoices</h1><p>Every invoice created for every shop</p></div>
+      <button class="btn btn-dark" onclick="navigate('newinvoice')">+ New Invoice</button></div>
+    <div class="panel">
+      ${invs.length===0 ? emptyState('No invoices yet','Create your first invoice.') : `
+      <table><thead><tr><th>Invoice</th><th>Shop</th><th>Date</th><th>Total</th><th>Due</th><th>Status</th><th>Assigned</th></tr></thead>
+      <tbody>${invs.map(i=>`<tr>
+        <td>#${i.invoiceNo}</td><td>${shopName(i.shopId)}</td><td>${i.date}</td>
+        <td class="amt">${fmt(i.total)}</td><td class="amt">${fmt(invoiceDue(i))}</td>
+        <td>${statusBadge(i)}</td>
+        <td>${i.assignedTo ? (getUsers().find(u=>u.username===i.assignedTo)||{}).name||i.assignedTo : 'Any staff'}</td>
+      </tr>`).join('')}</tbody></table>`}
+    </div>
+  `;
+}
+
+/* ======================= MANAGER: REPORTS ======================= */
+function viewReports(){
+  const invs = getInvoices();
+  const byShop = {};
+  invs.forEach(i=>{ const n=shopName(i.shopId); byShop[n]=byShop[n]||{total:0,due:0}; byShop[n].total+=i.total; byShop[n].due+=invoiceDue(i); });
+
+  const byStaff = {};
+  invs.forEach(i=> (i.paymentsLog||[]).forEach(p=>{ byStaff[p.collectedByName]=byStaff[p.collectedByName]||0; byStaff[p.collectedByName]+=p.amount; }));
+
+  return `
+    <div class="topbar"><div><h1>Reports</h1><p>Shop-wise and staff-wise summary</p></div></div>
+
+    <div class="panel">
+      <div class="panel-head"><h2>By Shop</h2></div>
+      ${Object.keys(byShop).length===0 ? emptyState('No data yet','') : `
+      <table><thead><tr><th>Shop</th><th>Total Invoiced</th><th>Outstanding Due</th></tr></thead>
+      <tbody>${Object.entries(byShop).map(([n,v])=>`<tr><td>${n}</td><td class="amt">${fmt(v.total)}</td><td class="amt">${fmt(v.due)}</td></tr>`).join('')}</tbody></table>`}
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><h2>By Collection Staff</h2></div>
+      ${Object.keys(byStaff).length===0 ? emptyState('No collections logged yet','') : `
+      <table><thead><tr><th>Staff</th><th>Total Collected</th></tr></thead>
+      <tbody>${Object.entries(byStaff).map(([n,v])=>`<tr><td>${n}</td><td class="amt">${fmt(v)}</td></tr>`).join('')}</tbody></table>`}
+    </div>
+  `;
+}
+
+/* ======================= STAFF: TO COLLECT ======================= */
+function viewMyCollections(){
+  const invs = getInvoices().filter(i=> invoiceStatus(i)!=='paid' && (!i.assignedTo || i.assignedTo===session.username));
+  const totalDue = invs.reduce((s,i)=>s+invoiceDue(i),0);
+  return `
+    <div class="topbar"><div><h1>To Collect</h1><p>Outstanding invoices assigned to you or open to any staff</p></div></div>
+    <div class="kpi-row">
+      <div class="kpi due"><div class="lbl">Total Due (your list)</div><div class="val mono">${fmt(totalDue)}</div></div>
+      <div class="kpi"><div class="lbl">Invoices Pending</div><div class="val mono">${invs.length}</div></div>
+    </div>
+    <div class="panel">
+      ${invs.length===0 ? emptyState('Nothing pending','All assigned invoices are fully collected.') : `
+      <table><thead><tr><th>Invoice</th><th>Shop</th><th>Date</th><th>Total</th><th>Due</th><th>Status</th><th></th></tr></thead>
+      <tbody>${invs.map(i=>`<tr>
+        <td>#${i.invoiceNo}</td><td>${shopName(i.shopId)}</td><td>${i.date}</td>
+        <td class="amt">${fmt(i.total)}</td><td class="amt">${fmt(invoiceDue(i))}</td>
+        <td>${statusBadge(i)}</td>
+        <td style="text-align:right"><button class="btn btn-sm btn-dark" onclick="openCollectForm('${i.id}')">Collect Cash</button></td>
+      </tr>`).join('')}</tbody></table>`}
+    </div>
+  `;
+}
+function openCollectForm(invId){
+  const inv = getInvoices().find(i=>i.id===invId);
+  const due = invoiceDue(inv);
+  openModal(`
+    <h3>Collect Cash — Invoice #${inv.invoiceNo}</h3>
+    <p style="color:var(--ink-soft);font-size:13.5px;margin-top:-8px;">${shopName(inv.shopId)} · Due: <b class="mono">${fmt(due)}</b></p>
+    <div class="field"><label>Amount Collected</label><input type="number" id="collAmt" value="${fmt(due)}" step="0.01"></div>
+    <div class="field"><label>Note (optional)</label><input id="collNote" placeholder="e.g. cash / partial payment"></div>
+    <div style="display:flex;gap:8px;margin-top:6px;">
+      <button class="btn btn-dark" style="flex:1" onclick="confirmCollect('${invId}')">Confirm Collection</button>
+      <button class="btn" style="flex:1" onclick="closeModal()">Cancel</button>
+    </div>
+  `);
+}
+function confirmCollect(invId){
+  const amt = parseFloat(document.getElementById('collAmt').value);
+  const note = document.getElementById('collNote').value.trim();
+  if(!amt || amt<=0){ showToast('Enter a valid amount'); return; }
+  const invoices = getInvoices();
+  const inv = invoices.find(i=>i.id===invId);
+  const due = invoiceDue(inv);
+  const capped = Math.min(amt, due);
+  inv.paymentsLog = inv.paymentsLog || [];
+  inv.paymentsLog.push({date: todayISO(), amount: capped, collectedBy: session.username, collectedByName: session.name, note});
+  setInvoices(invoices);
+  closeModal(); showToast('Collection recorded'); render();
+}
+
+/* ======================= STAFF: HISTORY ======================= */
+function viewMyHistory(){
+  const entries = [];
+  getInvoices().forEach(i=> (i.paymentsLog||[]).filter(p=>p.collectedBy===session.username).forEach(p=> entries.push({...p, invoiceNo:i.invoiceNo, shop:shopName(i.shopId)})));
+  entries.sort((a,b)=> b.date.localeCompare(a.date));
+  const totalAll = entries.reduce((s,e)=>s+e.amount,0);
+  const today = todayISO();
+  const totalToday = entries.filter(e=>e.date===today).reduce((s,e)=>s+e.amount,0);
+  return `
+    <div class="topbar"><div><h1>My Collection History</h1><p>All cash you have collected</p></div></div>
+    <div class="kpi-row">
+      <div class="kpi paid"><div class="lbl">Collected Today</div><div class="val mono">${fmt(totalToday)}</div></div>
+      <div class="kpi teal"><div class="lbl">Collected All-Time</div><div class="val mono">${fmt(totalAll)}</div></div>
+    </div>
+    <div class="panel">
+      ${entries.length===0 ? emptyState('No collections yet','') : `
+      <table><thead><tr><th>Date</th><th>Invoice</th><th>Shop</th><th>Amount</th><th>Note</th></tr></thead>
+      <tbody>${entries.map(e=>`<tr><td>${e.date}</td><td>#${e.invoiceNo}</td><td>${e.shop}</td><td class="amt">${fmt(e.amount)}</td><td>${e.note||'—'}</td></tr>`).join('')}</tbody></table>`}
+    </div>
+  `;
+}
+
+/* ======================= INIT ======================= */
+loadDB();
+const saved = sessionStorage.getItem('nt_session');
+if(saved){ session = JSON.parse(saved); enterApp(); }
+</script>
+</body>
+</html>
